@@ -5,7 +5,7 @@ pipeline{
         stage ('Build') {
             steps{
                 sh 'echo "Building..."'
-                sh 'sudo Scripts/linux-build.sh'
+                sh 'Scripts/linux-build.sh'
                 archiveArtifacts artifacts: 'bin/Debug/*', fingerprint: true
             }
         }
@@ -13,7 +13,7 @@ pipeline{
         stage ('Test') {
             steps{
                 sh 'echo "Running..."'
-                sh 'sudo Scripts/linux-run.sh'
+                sh 'Scripts/linux-run.sh'
             }
         }
     }

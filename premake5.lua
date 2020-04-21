@@ -1,4 +1,4 @@
-solutuion "DV2556Project"
+solution "DV2556Project"
     configurations { "Debug", "Release" }
     location "Build"
         
