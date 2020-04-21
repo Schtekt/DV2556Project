@@ -1,4 +1,4 @@
-workspace "DV2556Project"
+solutuion "DV2556Project"
     configurations { "Debug", "Release" }
     location "Build"
         
