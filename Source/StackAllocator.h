@@ -7,14 +7,14 @@ private:
 	char* m_pStart;
 	char* m_pCurr;
 	char* m_pEnd;
-	StackAllocator(size_t size);
+	size_t m_size;
 public:
+	StackAllocator(char* start, char* end, size_t size);
 	~StackAllocator();
-	void* Allocate(size_t size);
-	void DeAllocate(void* ptr);
-	static StackAllocator* Init(size_t size);
-	void FreeAll();
-	void SetMemRange(size_t size);
+	void* Allocate();
+	void Return(void* ptr);
+	void Release();
+
 };
 
 #endif

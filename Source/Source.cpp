@@ -5,14 +5,19 @@
 #include <iostream>
 #include "PoolAllocator.h"
 
-void StackAllocTest()
+void StackAllocTest(int nrOfIntegers)
 {
-	StackAllocator* alloc = StackAllocator::Init(sizeof(int)*1024);
-	for (int i = 0; i < 1024; i++)
+	size_t toAlloc = nrOfIntegers * sizeof(int);
+	char* start = (char*)malloc(toAlloc);
+	char* end = (char*)(start + toAlloc);
+	StackAllocator alloc(start, end, sizeof(int));
+
+	for (int i = 0; i < nrOfIntegers; i++)
 	{
-		int* tmp = (int*)alloc->Allocate(sizeof(int));
+		int* tmp = (int*)alloc.Allocate();
+		*tmp = 5;
+		alloc.Return(tmp);
 	}
-	free(alloc);
 }
 
 void PoolAllocTest(int nrOfIntegers)
@@ -34,13 +39,13 @@ int main()
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
-	//Profiler profiler;
-	//profiler.start();
+	Profiler profiler;
+	profiler.start();
 
-	//StackAllocTest();
+	StackAllocTest(20);
 	PoolAllocTest(20);
-	//profiler.end();
-	//profiler.print("test.txt", "StackAllocTest:");
+	profiler.end();
+	profiler.print("test.txt", "StackAllocTest:");
 
 	return 0;
 }

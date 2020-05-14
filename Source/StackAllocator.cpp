@@ -1,61 +1,37 @@
 #include "StackAllocator.h"
 #include <cstdlib>
-StackAllocator::StackAllocator(size_t size)
+
+
+StackAllocator::StackAllocator(char* start, char* end, size_t size): m_pStart(start), m_pEnd(end), m_pCurr(start), m_size(size)
 {
-	m_pStart = (char*)malloc(size);
-	m_pEnd = (m_pStart + size);
-	m_pCurr = m_pStart;
+
 }
 
 StackAllocator::~StackAllocator()
 {
-	FreeAll();
+	free(m_pStart);
 }
 
-void * StackAllocator::Allocate(size_t size)
+void* StackAllocator::Allocate()
 {
-	void* ptr = nullptr;
-	if (m_pEnd > m_pCurr + size)
+	void* toReturn = nullptr;
+	if (m_pCurr + m_size < m_pEnd)
 	{
-		m_pCurr;
-		m_pCurr += size;
+		toReturn = m_pCurr;
+		m_pCurr += m_size;
 	}
-	return ptr;
+	return toReturn;
 }
 
-void StackAllocator::DeAllocate(void * ptr)
+void StackAllocator::Return(void* ptr)
 {
-	if (ptr < m_pEnd && ptr > m_pStart)
+	if (((char*)ptr) < m_pCurr && m_pStart <= ((char*)ptr))
 	{
 		m_pCurr = (char*)ptr;
 	}
 }
 
-StackAllocator* StackAllocator::Init(size_t size)
+void StackAllocator::Release()
 {
-	static StackAllocator* pStack;
-	if (!pStack)
-	{
-		pStack = (StackAllocator*)malloc(sizeof(StackAllocator));
-		*pStack = StackAllocator(size);
-	}
-	return pStack;
-}
-
-void StackAllocator::FreeAll()
-{
-	m_pCurr = nullptr;
-	free(m_pStart);
-	m_pStart = nullptr;
-	m_pEnd = nullptr;
-}
-
-void StackAllocator::SetMemRange(size_t size)
-{
-	if (!m_pStart)
-	{
-		m_pStart = (char*)malloc(size);
-		m_pEnd = (m_pStart + size);
-		m_pCurr = m_pStart;
-	}
+	m_pCurr = m_pStart;
 }
