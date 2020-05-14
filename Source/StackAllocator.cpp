@@ -15,7 +15,7 @@ StackAllocator::~StackAllocator()
 void* StackAllocator::Allocate()
 {
 	void* toReturn = nullptr;
-	if (m_pCurr + m_size < m_pEnd)
+	if (m_pCurr + m_size <= m_pEnd)
 	{
 		toReturn = m_pCurr;
 		m_pCurr += m_size;

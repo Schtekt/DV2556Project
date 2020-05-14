@@ -26,7 +26,7 @@ void Profiler::print(std::string file, std::string text)
 {
 	std::ofstream stream;
 	
-	stream.open(file);
+	stream.open(file, std::ios_base::app);
 	stream << text << " " << time << std::endl;
 	stream.close();
 }

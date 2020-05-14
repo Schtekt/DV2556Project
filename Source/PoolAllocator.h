@@ -11,7 +11,7 @@ class PoolAllocator
 private:
 	char* m_pStart;
 	char* m_pEnd;
-	entry* m_pHead;
+	char* m_pHead;
 public:
 	PoolAllocator(char* start, char* end, size_t sizeOfObject);
 	~PoolAllocator();
