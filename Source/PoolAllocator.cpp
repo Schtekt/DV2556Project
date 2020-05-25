@@ -18,6 +18,11 @@ PoolAllocator::~PoolAllocator()
 	free(m_pStart);
 }
 
+size_t PoolAllocator::CalcSizeToAlloc(size_t sizeOfObject, size_t nrOfObjects)
+{
+	return (sizeOfObject + sizeof(entry))*nrOfObjects;
+}
+
 void * PoolAllocator::Allocate()
 {
 	void* pToReturn = nullptr;
