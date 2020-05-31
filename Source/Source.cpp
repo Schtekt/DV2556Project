@@ -66,14 +66,12 @@ void PoolAllocTest(int nrOfIntegers)
 	g_profiler.print("test.txt", "PoolAllocator deallocating " + std::to_string(nrOfIntegers) + " integers");
 }
 
-void AllocationTests()
+void AllocationTests(const size_t sizePerInstance, const size_t instancesToAllocate)
 {
 	float initTime;
 	float allocationTime;
 	float deallocationTime;
-	const size_t sizePerInstance = 16;
-	const size_t instancesToAllocate = 20000;
-	char* pointerHolder[instancesToAllocate];
+	char** pointerHolder = new char*[instancesToAllocate];
 
 	// StackAllocator test!
 	g_profiler.start();
@@ -93,7 +91,7 @@ void AllocationTests()
 	}
 	g_profiler.end();
 	allocationTime = g_profiler.getDuration();
-	g_profiler.print("stackTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with StackAllocator");
+	g_profiler.print("stackTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with StackAllocator: " + std::to_string(g_profiler.getDuration()));
 	
 	g_profiler.start();
 	for (int i = 0; i < instancesToAllocate; i++)
@@ -102,10 +100,12 @@ void AllocationTests()
 	}
 	g_profiler.end();
 	deallocationTime = g_profiler.getDuration();
-	g_profiler.print("stackTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with StackAllocator");
+	g_profiler.print("stackTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with StackAllocator: " + std::to_string(g_profiler.getDuration()));
 
 	g_profiler.print("stackTest.txt", "Total time to allocate and deallocate " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + 
 		" bytes of memory with StackAllocator " + std::to_string(initTime + allocationTime + deallocationTime));
+	g_profiler.print("stackTest.txt", "\n");
+
 
 	// PoolAllocator test!
 	g_profiler.start();
@@ -114,24 +114,24 @@ void AllocationTests()
 	PoolAllocator pool(start,(char*)(start + size), sizePerInstance);
 	g_profiler.end();
 	initTime = g_profiler.getDuration();
-	g_profiler.print("poolTest.txt", "Setup of PoolAllocator with " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes as maximum allowed allocated memory.");
+	g_profiler.print("poolTest.txt", "Setup of PoolAllocator with " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes as maximum allowed allocated memory: " + std::to_string(g_profiler.getDuration()));
 
 	g_profiler.start();
 	for (int i = 0; i < instancesToAllocate; i++)
 		pointerHolder[i] = (char*)pool.Allocate();
 	g_profiler.end();
 	allocationTime = g_profiler.getDuration();
-	g_profiler.print("poolTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with PoolAllocator");
+	g_profiler.print("poolTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with PoolAllocator: " + std::to_string(g_profiler.getDuration()));
 	
 	g_profiler.start();
 	for (int i = 0; i < instancesToAllocate; i++)
 		pool.Return(pointerHolder[i]);
 	g_profiler.end();
 	deallocationTime = g_profiler.getDuration();
-	g_profiler.print("poolTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with PoolAllocator");
+	g_profiler.print("poolTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with PoolAllocator: " + std::to_string(g_profiler.getDuration()));
 	g_profiler.print("poolTest.txt", "Total time to allocate and deallocate " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) +
 		" bytes of memory with PoolAllocator " + std::to_string(initTime + allocationTime + deallocationTime));
-
+	g_profiler.print("poolTest.txt", "\n");
 
 	// Malloc test!
 
@@ -140,17 +140,19 @@ void AllocationTests()
 		pointerHolder[i] = (char*)malloc(sizePerInstance);
 	g_profiler.end();
 	allocationTime = g_profiler.getDuration();
-	g_profiler.print("mallocTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with malloc");
+	g_profiler.print("mallocTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with malloc: " + std::to_string(g_profiler.getDuration()));
 
 	g_profiler.start();
 	for (int i = 0; i < instancesToAllocate; i++)
 		free(pointerHolder[i]);
 	g_profiler.end();
 	deallocationTime = g_profiler.getDuration();
-	g_profiler.print("mallocTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with  malloc");
+	g_profiler.print("mallocTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with  malloc: " + std::to_string(g_profiler.getDuration()));
 
 	g_profiler.print("mallocTest.txt", "Total time to allocate and deallocate " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) +
 		" bytes of memory with malloc " + std::to_string(allocationTime + deallocationTime));
+	g_profiler.print("mallocTest.txt", "\n");
+	delete[] pointerHolder;
 }
 
 int main()
@@ -160,6 +162,14 @@ int main()
 
 	//StackAllocTest(1000000);
 	//PoolAllocTest(1000000);
-	AllocationTests();
+	AllocationTests(32, 10000);
+	AllocationTests(16, 10000);
+	AllocationTests(4 , 10000);
+	AllocationTests(32, 1000000);
+	AllocationTests(16, 1000000);
+	AllocationTests(4 , 1000000);
+	AllocationTests(32, 10000000);
+	AllocationTests(16, 10000000);
+	AllocationTests(4, 10000000);
 	return 0;
 }
