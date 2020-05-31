@@ -81,7 +81,7 @@ void AllocationTests(const size_t sizePerInstance, const size_t instancesToAlloc
 	StackAllocator alloc(start,end,sizePerInstance);
 	g_profiler.end();
 	initTime = g_profiler.getDuration();
-	g_profiler.print("stackTest.txt", "Setup of StackAllocator with " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes as maximum allowed allocated memory.");
+	g_profiler.print("stackTest.txt", "Setup of StackAllocator with " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes as maximum allowed allocated memory: " + std::to_string(g_profiler.getDuration()));
 	
 	g_profiler.start();
 
