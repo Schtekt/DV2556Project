@@ -68,90 +68,112 @@ void PoolAllocTest(int nrOfIntegers)
 
 void AllocationTests(const size_t sizePerInstance, const size_t instancesToAllocate)
 {
-	float initTime;
-	float allocationTime;
-	float deallocationTime;
+	const unsigned int redoTest = 100;
+	float initTimeAvg = 0;
+	float allocTimeAvg = 0;
+	float deallocTimeAvg = 0;
 	char** pointerHolder = new char*[instancesToAllocate];
-
+	char* start;
+	char* end;
 	// StackAllocator test!
-	g_profiler.start();
-	size_t toAlloc = sizePerInstance * instancesToAllocate;
-	char* start = (char*)malloc(toAlloc);
-	char* end = start + toAlloc;
-	StackAllocator alloc(start,end,sizePerInstance);
-	g_profiler.end();
-	initTime = g_profiler.getDuration();
-	g_profiler.print("stackTest.txt", "Setup of StackAllocator with " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes as maximum allowed allocated memory: " + std::to_string(g_profiler.getDuration()));
-	
-	g_profiler.start();
 
-	for (int i = 0; i < instancesToAllocate; i++)
+	for (int j = 0; j < redoTest; j++)
 	{
-		pointerHolder[i] = (char*)alloc.Allocate();
+		g_profiler.start();
+		size_t toAlloc = sizePerInstance * instancesToAllocate;
+		start = (char*)malloc(toAlloc);
+		end = start + toAlloc;
+		StackAllocator alloc(start, end, sizePerInstance);
+		g_profiler.end();
+		initTimeAvg += g_profiler.getDuration();
+		g_profiler.start();
+
+		for (int i = 0; i < instancesToAllocate; i++)
+		{
+			pointerHolder[i] = (char*)alloc.Allocate();
+		}
+		g_profiler.end();
+
+		allocTimeAvg = g_profiler.getDuration();
+
+		g_profiler.start();
+		for (int i = 0; i < instancesToAllocate; i++)
+		{
+			alloc.Return(pointerHolder[i]);
+		}
+		g_profiler.end();
+		deallocTimeAvg = g_profiler.getDuration();
 	}
-	g_profiler.end();
-	allocationTime = g_profiler.getDuration();
-	g_profiler.print("stackTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with StackAllocator: " + std::to_string(g_profiler.getDuration()));
 	
-	g_profiler.start();
-	for (int i = 0; i < instancesToAllocate; i++)
-	{
-		alloc.Return(pointerHolder[i]);
-	}
-	g_profiler.end();
-	deallocationTime = g_profiler.getDuration();
-	g_profiler.print("stackTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with StackAllocator: " + std::to_string(g_profiler.getDuration()));
-
-	g_profiler.print("stackTest.txt", "Total time to allocate and deallocate " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + 
-		" bytes of memory with StackAllocator " + std::to_string(initTime + allocationTime + deallocationTime));
-	g_profiler.print("stackTest.txt", "\n");
-
+	// calc and print
+	initTimeAvg /= redoTest;
+	allocTimeAvg /= redoTest;
+	deallocTimeAvg /= redoTest;
+	g_profiler.print("StackTest.txt", std::to_string(sizePerInstance) + ", " + std::to_string(instancesToAllocate) + ", " + std::to_string(initTimeAvg) + ", " + std::to_string(allocTimeAvg) + ", " + std::to_string(deallocTimeAvg) + "\n");
+	// reset
+	initTimeAvg = 0;
+	allocTimeAvg = 0;
+	deallocTimeAvg = 0;
 
 	// PoolAllocator test!
-	g_profiler.start();
-	size_t size = PoolAllocator::CalcSizeToAlloc(sizePerInstance, instancesToAllocate);
-	start = (char*)malloc(size);
-	PoolAllocator pool(start,(char*)(start + size), sizePerInstance);
-	g_profiler.end();
-	initTime = g_profiler.getDuration();
-	g_profiler.print("poolTest.txt", "Setup of PoolAllocator with " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes as maximum allowed allocated memory: " + std::to_string(g_profiler.getDuration()));
+	for (int j = 0; j < redoTest; j++)
+	{
+		g_profiler.start();
+		size_t size = PoolAllocator::CalcSizeToAlloc(sizePerInstance, instancesToAllocate);
+		start = (char*)malloc(size);
+		PoolAllocator pool(start, (char*)(start + size), sizePerInstance);
+		g_profiler.end();
+		initTimeAvg += g_profiler.getDuration();
+		
+		g_profiler.start();
+		for (int i = 0; i < instancesToAllocate; i++)
+			pointerHolder[i] = (char*)pool.Allocate();
+		g_profiler.end();
+		allocTimeAvg = g_profiler.getDuration();
+		
+		g_profiler.start();
+		for (int i = 0; i < instancesToAllocate; i++)
+			pool.Return(pointerHolder[i]);
+		g_profiler.end();
+		deallocTimeAvg += g_profiler.getDuration();
+	}
 
-	g_profiler.start();
-	for (int i = 0; i < instancesToAllocate; i++)
-		pointerHolder[i] = (char*)pool.Allocate();
-	g_profiler.end();
-	allocationTime = g_profiler.getDuration();
-	g_profiler.print("poolTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with PoolAllocator: " + std::to_string(g_profiler.getDuration()));
+	// calc and print
+	initTimeAvg /= redoTest;
+	allocTimeAvg /= redoTest;
+	deallocTimeAvg /= redoTest;
+	g_profiler.print("PoolTest.txt", std::to_string(sizePerInstance) + ", " + std::to_string(instancesToAllocate) + ", " + std::to_string(initTimeAvg) + ", " + std::to_string(allocTimeAvg) + ", " + std::to_string(deallocTimeAvg) + "\n");
 	
-	g_profiler.start();
-	for (int i = 0; i < instancesToAllocate; i++)
-		pool.Return(pointerHolder[i]);
-	g_profiler.end();
-	deallocationTime = g_profiler.getDuration();
-	g_profiler.print("poolTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with PoolAllocator: " + std::to_string(g_profiler.getDuration()));
-	g_profiler.print("poolTest.txt", "Total time to allocate and deallocate " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) +
-		" bytes of memory with PoolAllocator " + std::to_string(initTime + allocationTime + deallocationTime));
-	g_profiler.print("poolTest.txt", "\n");
+	// reset
+	initTimeAvg = 0;
+	allocTimeAvg = 0;
+	deallocTimeAvg = 0;
 
 	// Malloc test!
+	for (int j = 0; j < redoTest; j++)
+	{
+		g_profiler.start();
+		for (int i = 0; i < instancesToAllocate; i++)
+			pointerHolder[i] = (char*)malloc(sizePerInstance);
+		g_profiler.end();
+		allocTimeAvg += g_profiler.getDuration();
 
-	g_profiler.start();
-	for (int i = 0; i < instancesToAllocate; i++)
-		pointerHolder[i] = (char*)malloc(sizePerInstance);
-	g_profiler.end();
-	allocationTime = g_profiler.getDuration();
-	g_profiler.print("mallocTest.txt", "Allocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with malloc: " + std::to_string(g_profiler.getDuration()));
+		g_profiler.start();
+		for (int i = 0; i < instancesToAllocate; i++)
+			free(pointerHolder[i]);
+		g_profiler.end();
+		deallocTimeAvg += g_profiler.getDuration();
+	}
+	
+	// calc and print
+	allocTimeAvg /= redoTest;
+	deallocTimeAvg /= redoTest;
+	g_profiler.print("MallocTest.txt", std::to_string(sizePerInstance) + ", " + std::to_string(instancesToAllocate) + ", -, " + std::to_string(allocTimeAvg) + ", " + std::to_string(deallocTimeAvg) + "\n");
+	// reset
+	allocTimeAvg = 0;
+	deallocTimeAvg = 0;
 
-	g_profiler.start();
-	for (int i = 0; i < instancesToAllocate; i++)
-		free(pointerHolder[i]);
-	g_profiler.end();
-	deallocationTime = g_profiler.getDuration();
-	g_profiler.print("mallocTest.txt", "Deallocation of " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) + " bytes of memory with  malloc: " + std::to_string(g_profiler.getDuration()));
-
-	g_profiler.print("mallocTest.txt", "Total time to allocate and deallocate " + std::to_string(instancesToAllocate) + " instances of " + std::to_string(sizePerInstance) +
-		" bytes of memory with malloc " + std::to_string(allocationTime + deallocationTime));
-	g_profiler.print("mallocTest.txt", "\n");
+	// Finish tests.
 	delete[] pointerHolder;
 }
 
